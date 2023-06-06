@@ -139,10 +139,9 @@ void main(void)
                 button_release = 1;
             }
         }
-        pb_previous = pb_current;                             // Update the previous button state
-        pb_current = pb_state;                                // Update the current button state
-        playback_delay = (((1750 * ADC0.RESULT >> 8) + 250)); // Calculate the playback delay
-        STATE_LSFR = 0x11271965;                              // seed for LSFR
+        pb_previous = pb_current; // Update the previous button state
+        pb_current = pb_state;    // Update the current button state
+        STATE_LSFR = 0x11271965;  // seed for LSFR
         switch (state)
         {
         case maker:
@@ -303,13 +302,13 @@ void main(void)
                 button_release = 1;
             }
 
-            if ((current_time - start_time >= (playback_delay >> 1)) && button_release == 1)
+            if ((current_time - start_time >= (((1750 * ADC0.RESULT >> 8) + 250)) >> 1) && button_release == 1)
             {
 
                 uart_puts("Finished Waiting buzz off\n"); // Print the current state
                 TCA0.SINGLE.CMP0BUF = 0;
                 tplay = 0;
-                if (current_time - start_time >= playback_delay)
+                if (current_time - start_time >= (((1750 * ADC0.RESULT >> 8) + 250)))
                 {
                     uart_puts("Finished Waiting\n"); // Print the current state
                     play = 1;
