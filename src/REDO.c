@@ -58,8 +58,8 @@
 // uint8_t guess = 0;       // index of the guess
 // uint8_t value = 0;       // current step in the sequence
 
-// uint8_t time;            // time between steps in the sequence
-// uint8_t num;             // Number of the button pressed
+// uint8_t time; // time between steps in the sequence
+// uint8_t num;  // Number of the button pressed
 
 // void main(void)
 // {
@@ -79,7 +79,7 @@
 //     playback_states playback_states = maker;
 
 //     uint16_t playback_delay; // delay between steps in the sequence
-//     uint8_t button_release; // Check if any buttons are released
+//     uint8_t button_release;  // Check if any buttons are released
 //     while (1)
 //     {
 //         uint8_t pb_changed = pb_current ^ pb_previous;        // Check if any buttons have changed
@@ -88,181 +88,198 @@
 //         pb_previous = pb_current;                             // Update the previous button state
 //         pb_current = pb_state;                                // Update the current button state
 //         playback_delay = (((1750 * ADC0.RESULT >> 8) + 250)); // Calculate the playback delay
-//         switch (gameMode)
-//         {
-//         case playback:
-//         {
-//             uart_puts("gamemode = playback\n");
-//             switch (playback_states)
-//             {
-//             case maker:
-//             {
-//                 uart_puts("playback_states = maker\n");
-//                 if (sequenceI < round_count)
-//                 {
-//                     uart_puts("sequenceI < round_count\n");
-//                     uart_puts("next\n");
-//                     value = next();         // Get the next step
-//                     uart_putc(value + '0'); // Print the current step
-//                     switch (value)
-//                     {
-//                     case 0:
-//                         uart_puts("value = 0\n");
-//                         buttonState = button1;
-//                         break;
-//                     case 1:
-//                         uart_puts("value = 1\n");
-//                         buttonState = button2;
-//                         break;
-//                     case 2:
-//                         uart_puts("value = 2\n");
-//                         buttonState = button3;
-//                         break;
-//                     case 3:
-//                         uart_puts("value = 3\n");
-//                         buttonState = button4;
-//                         break;
-//                     }
-//                     playback_states = playwait;
-//                     start_time = current_time;
-//                 }
-//                 else
-//                 {
-//                     uart_puts("sequenceI >= round_count\n");
-//                     gameMode = gameplay;
-//                     sequenceI = 0;
-//                 }
-//                 break;
-//             }
-//             case playwait:
-//             {
-//                 sequenceI++;
-//                 playback_states = maker;
-//                 break;
-//             }
-//             }
-//             break;
-//             uart_puts("\n");
-//         }
 
-//         case gameplay:
+//         if (pb_falling & PIN4_bm)
 //         {
-//             uart_puts("gamemode = gameplay\n");
-//             if (pb_falling & PIN4_bm)
-//             {
-//                 uart_puts("pb_falling & PIN4_bm\n");
-//                 buttonState = button1;
-//                 button_release = 1;
-//                 if (pb_falling & pb_rising)
-//                 {
-//                     button_release = 0;
-//                 }
-//             }
-//             if (pb_falling & PIN5_bm)
-//             {
-//                 uart_puts("pb_falling & PIN5_bm\n");
-//                 buttonState = button2;
-//                 button_release = 1;
-//                 if (pb_falling & pb_rising)
-//                 {
-//                     button_release = 0;
-//                 }
-//             }
-//             if (pb_falling & PIN6_bm)
-//             {
-//                 uart_puts("pb_falling & PIN6_bm\n");
-//                 buttonState = button3;
-//                 button_release = 1;
-//                 if (pb_falling & pb_rising)
-//                 {
-//                     button_release = 0;
-//                 }
-//             }
-//             if (pb_falling & PIN7_bm)
-//             {
-//                 uart_puts("pb_falling & PIN7_bm\n");
-//                 buttonState = button4;
-//                 button_release = 1;
-//                 if (pb_falling & pb_rising)
-//                 {
-//                     button_release = 0;
-//                 }
-//             }
-//             break;
-//             uart_puts("\n");
-//         }
-//         }
-
-//         switch (buttonState)
-//         {
-//         case wait:
-//         {
-//             uart_puts("buttonState = wait\n");
-//             if (((current_time - start_time) >= (playback_delay >> 1)))
-//             {
-//                 TCA0.SINGLE.PERBUF = 0;
-//                 uart_puts("Finished Waiting buzz off\n"); // Print the current state
-//                 if ((current_time - start_time) >= playback_delay)
-//                 {
-//                     uart_puts("Finished Waiting\n"); // Print the current state
-//                     playback_states = playwait;
-//                     time = 0;
-//                 }
-//             }
-//             break;
-//         }
-
-//         case button1:
-//             num = 0;
-//             uart_puts("buttonState = button0\n");
 //             start_time = current_time;
 //             TCA0.SINGLE.PERBUF = 9487;
 //             TCA0.SINGLE.CMP0BUF = 4743;
 //             PORTB.OUTSET = PIN0_bm;
 //             start_time = current_time;
 //             time = 1;
-//             buttonState = wait;
-//             break;
-
-//         case button2:
-//             num = 1;
-//             uart_puts("buttonState = button1\n");
-//             start_time = current_time;
-//             TCA0.SINGLE.PERBUF = 11288;
-//             TCA0.SINGLE.CMP0BUF = 5644;
-//             PORTB.OUTSET = PIN0_bm;
-//             start_time = current_time;
-//             time = 1;
-//             buttonState = wait;
-//             break;
-
-//         case button3:
-//             num = 2;
-//             uart_puts("buttonState = button2\n");
-//             start_time = current_time;
-//             TCA0.SINGLE.PERBUF = 12654;
-//             TCA0.SINGLE.CMP0BUF = 6327;
-//             PORTB.OUTSET = PIN0_bm;
-//             start_time = current_time;
-//             time = 1;
-//             buttonState = wait;
-//             break;
-
-//         case button4:
-//             num = 3;
-//             uart_puts("buttonState = button3\n");
-//             start_time = current_time;
-//             TCA0.SINGLE.PERBUF = 14242;
-//             TCA0.SINGLE.CMP0BUF = 7121;
-//             PORTB.OUTSET = PIN0_bm;
-//             start_time = current_time;
-//             time = 1;
-//             buttonState = wait;
-//             break;
 //         }
+
+//         if (current_time - start_time > 500)
+//         {
+//             TCA0.SINGLE.CMP0BUF = 0;
+//         }
+
+//         //         switch (gameMode)
+//         //         {
+//         //         case playback:
+//         //         {
+//         //             uart_puts("gamemode = playback\n");
+//         //             switch (playback_states)
+//         //             {
+//         //             case maker:
+//         //             {
+//         //                 uart_puts("playback_states = maker\n");
+//         //                 if (sequenceI < round_count)
+//         //                 {
+//         //                     uart_puts("sequenceI < round_count\n");
+//         //                     uart_puts("next\n");
+//         //                     value = next();         // Get the next step
+//         //                     uart_putc(value + '0'); // Print the current step
+//         //                     switch (value)
+//         //                     {
+//         //                     case 0:
+//         //                         uart_puts("value = 0\n");
+//         //                         buttonState = button1;
+//         //                         break;
+//         //                     case 1:
+//         //                         uart_puts("value = 1\n");
+//         //                         buttonState = button2;
+//         //                         break;
+//         //                     case 2:
+//         //                         uart_puts("value = 2\n");
+//         //                         buttonState = button3;
+//         //                         break;
+//         //                     case 3:
+//         //                         uart_puts("value = 3\n");
+//         //                         buttonState = button4;
+//         //                         break;
+//         //                     }
+//         //                     playback_states = playwait;
+//         //                     start_time = current_time;
+//         //                 }
+//         //                 else
+//         //                 {
+//         //                     uart_puts("sequenceI >= round_count\n");
+//         //                     gameMode = gameplay;
+//         //                     sequenceI = 0;
+//         //                 }
+//         //                 break;
+//         //             }
+//         //             case playwait:
+//         //             {
+//         //                 sequenceI++;
+//         //                 playback_states = maker;
+//         //                 break;
+//         //             }
+//         //             }
+//         //             break;
+//         //             uart_puts("\n");
+//         //         }
+
+//         //         case gameplay:
+//         //         {
+//         //             uart_puts("gamemode = gameplay\n");
+//         //             if (pb_falling & PIN4_bm)
+//         //             {
+//         //                 uart_puts("pb_falling & PIN4_bm\n");
+//         //                 buttonState = button1;
+//         //                 button_release = 1;
+//         //                 if (pb_falling & pb_rising)
+//         //                 {
+//         //                     button_release = 0;
+//         //                 }
+//         //             }
+//         //             if (pb_falling & PIN5_bm)
+//         //             {
+//         //                 uart_puts("pb_falling & PIN5_bm\n");
+//         //                 buttonState = button2;
+//         //                 button_release = 1;
+//         //                 if (pb_falling & pb_rising)
+//         //                 {
+//         //                     button_release = 0;
+//         //                 }
+//         //             }
+//         //             if (pb_falling & PIN6_bm)
+//         //             {
+//         //                 uart_puts("pb_falling & PIN6_bm\n");
+//         //                 buttonState = button3;
+//         //                 button_release = 1;
+//         //                 if (pb_falling & pb_rising)
+//         //                 {
+//         //                     button_release = 0;
+//         //                 }
+//         //             }
+//         //             if (pb_falling & PIN7_bm)
+//         //             {
+//         //                 uart_puts("pb_falling & PIN7_bm\n");
+//         //                 buttonState = button4;
+//         //                 button_release = 1;
+//         //                 if (pb_falling & pb_rising)
+//         //                 {
+//         //                     button_release = 0;
+//         //                 }
+//         //             }
+//         //             break;
+//         //             uart_puts("\n");
+//         //         }
+//         //         }
+
+//         //         switch (buttonState)
+//         //         {
+//         //         case wait:
+//         //         {
+//         //             uart_puts("buttonState = wait\n");
+//         //             if (((current_time - start_time) >= (playback_delay >> 1)))
+//         //             {
+//         //                 TCA0.SINGLE.PERBUF = 0;
+//         //                 uart_puts("Finished Waiting buzz off\n"); // Print the current state
+//         //                 if ((current_time - start_time) >= playback_delay)
+//         //                 {
+//         //                     uart_puts("Finished Waiting\n"); // Print the current state
+//         //                     playback_states = playwait;
+//         //                     time = 0;
+//         //                 }
+//         //             }
+//         //             break;
+//         //         }
+
+//         //         case button1:
+//         //             num = 0;
+//         //             uart_puts("buttonState = button0\n");
+//         //             start_time = current_time;
+//         //             TCA0.SINGLE.PERBUF = 9487;
+//         //             TCA0.SINGLE.CMP0BUF = 4743;
+//         //             PORTB.OUTSET = PIN0_bm;
+//         //             start_time = current_time;
+//         //             time = 1;
+//         //             buttonState = wait;
+//         //             break;
+
+//         //         case button2:
+//         //             num = 1;
+//         //             uart_puts("buttonState = button1\n");
+//         //             start_time = current_time;
+//         //             TCA0.SINGLE.PERBUF = 11288;
+//         //             TCA0.SINGLE.CMP0BUF = 5644;
+//         //             PORTB.OUTSET = PIN0_bm;
+//         //             start_time = current_time;
+//         //             time = 1;
+//         //             buttonState = wait;
+//         //             break;
+
+//         //         case button3:
+//         //             num = 2;
+//         //             uart_puts("buttonState = button2\n");
+//         //             start_time = current_time;
+//         //             TCA0.SINGLE.PERBUF = 12654;
+//         //             TCA0.SINGLE.CMP0BUF = 6327;
+//         //             PORTB.OUTSET = PIN0_bm;
+//         //             start_time = current_time;
+//         //             time = 1;
+//         //             buttonState = wait;
+//         //             break;
+
+//         //         case button4:
+//         //             num = 3;
+//         //             uart_puts("buttonState = button3\n");
+//         //             start_time = current_time;
+//         //             TCA0.SINGLE.PERBUF = 14242;
+//         //             TCA0.SINGLE.CMP0BUF = 7121;
+//         //             PORTB.OUTSET = PIN0_bm;
+//         //             start_time = current_time;
+//         //             time = 1;
+//         //             buttonState = wait;
+//         //             break;
+//         //         }
+//         //     }
+//         // }
 //     }
 // }
-
 // ISR(TCB0_INT_vect)
 // {
 //     current_time++;
