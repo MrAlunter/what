@@ -493,70 +493,70 @@ ISR(TCB0_INT_vect)
 
     pb_state ^= (count1 & count0) | (pb_changed & pb_state);
 
-    // static uint8_t side = 0;
-    // switch (tplay)
-    // {
-    //     // button presses.
-    // case 0:
-    //     if (side == 0)
-    //         spi_write(arte[0]);
-    //     else
-    //         spi_write(arte[0]);
-    //     break;
-    // case 1:
-    //     if (side == 0)
-    //         spi_write(arte[2]);
-    //     else
-    //         spi_write(arte[3]);
-    //     break;
-    // case 2:
-    //     if (side == 0)
-    //         spi_write(arte[2]);
-    //     else
-    //         spi_write(arte[4]);
-    //     break;
-    // case 3:
-    //     if (side == 0)
-    //         spi_write(arte[5]);
-    //     else
-    //         spi_write(arte[2]);
-    //     break;
-    // case 4:
-    //     if (side == 0)
-    //         spi_write(arte[6]);
-    //     else
-    //         spi_write(arte[2]);
-    //     break;
+    static uint8_t side = 0;
+    switch (tplay)
+    {
+        // button presses.
+    case 0:
+        if (side == 0)
+            spi_write(arte[0]);
+        else
+            spi_write(arte[0]);
+        break;
+    case 1:
+        if (side == 0)
+            spi_write(arte[2]);
+        else
+            spi_write(arte[3]);
+        break;
+    case 2:
+        if (side == 0)
+            spi_write(arte[2]);
+        else
+            spi_write(arte[4]);
+        break;
+    case 3:
+        if (side == 0)
+            spi_write(arte[5]);
+        else
+            spi_write(arte[2]);
+        break;
+    case 4:
+        if (side == 0)
+            spi_write(arte[6]);
+        else
+            spi_write(arte[2]);
+        break;
 
-    //     // correct or incorrect guesses
-    // case 6:
-    //     if (side == 0)
-    //         spi_write(gamer[0]);
-    //     else
-    //         spi_write(gamer[1]);
-    //     break;
-    // case 7:
-    //     if (side == 0)
-    //         spi_write(gamer[2]);
-    //     else
-    //         spi_write(gamer[3]);
-    //     break;
+        // correct or incorrect guesses
+    case 6:
+        if (side == 0)
+            spi_write(gamer[0]);
+        else
+            spi_write(gamer[1]);
+        break;
+    case 7:
+        if (side == 0)
+            spi_write(gamer[2]);
+        else
+            spi_write(gamer[3]);
+        break;
 
-    // // score display.
-    // case 8:
-    //     if (side == 0)
-    //         spi_write(score0s[score1]);
+    // score display.
+    case 8:
+        if (side == 0)
+            spi_write(score0s[score1]);
 
-    //     else if (side != 0)
-    //     {
-    //         if (score10 != 0)
-    //         {
-    //             spi_write(score1s[score10]);
-    //         }
-    //     }
+        else if (side != 0)
+        {
+            if (score10 != 0)
+            {
+                spi_write(score1s[score10]);
+            }
+        }
 
-    //     break;
-    // }
-    // side = !side;
+        break;
+    }
+    side = !side;
     TCB0.INTFLAGS = TCB_CAPT_bm;
 }
