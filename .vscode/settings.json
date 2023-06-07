@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "delay.h": "c",
+        "stdio.h": "c",
+        "io.h": "c",
+        "qutyserial.h": "c",
+        "timer.h": "c",
+        "buttons.h": "c",
+        "stdint.h": "c",
+        "interrupt.h": "c",
+        "test": "c",
+        "uart.h": "c",
+        "buzzer.h": "c",
+        "adc.h": "c",
+        "sequence_gen.h": "c",
+        "spi.h": "c"
+    },
+    "cmake.configureOnOpen": true
+}
