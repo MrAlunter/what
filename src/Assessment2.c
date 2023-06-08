@@ -69,18 +69,20 @@ uint16_t score1s[11] =
         0b10000001, // 9}
 };
 
-uint32_t STATE_LSFR = 0x11271965;
+uint32_t STATE_HOLDER[1] = {0x11271965};
+uint32_t *STATE_LSFR = &STATE_HOLDER[0];
 uint32_t STEP = 0;
+
 uint32_t next(void)
 {
-    uint32_t BIT = STATE_LSFR & 0b01;
-    STATE_LSFR >>= 1;
+    uint32_t BIT = *STATE_LSFR & 0b01;
+    *STATE_LSFR >>= 1;
 
     if (BIT == 1)
     {
-        STATE_LSFR ^= 0xE2023CAB;
+        *STATE_LSFR ^= 0xE2023CAB;
     }
-    STEP = STATE_LSFR & 0b11;
+    STEP = *STATE_LSFR & 0b11;
     return STEP;
 }
 
@@ -152,7 +154,7 @@ int main(void)
                 if (sequenceI < round_count)
                 {
                     uart_puts("sequenceI < round_count\n");
-                    STATE_LSFR = 0x11271965;
+                    *STATE_LSFR = STATE_HOLDER[0];
                     for (uint8_t i = 0; i <= sequenceI; i++)
                     {
                         uart_puts("sequenceI < round_count loop\n");
@@ -355,7 +357,6 @@ int main(void)
             {
                 button_release = 0;
             }
-            // uart_puts("buttonState = wait\n");
             if (((current_time - start_time) >= (((1750 * ADC0.RESULT >> 8) + 250) >> 1)) && button_release == 0)
             {
                 TCA0.SINGLE.PERBUF = 0;
@@ -381,8 +382,8 @@ int main(void)
             ledD = 0;
             uart_puts("buttonState = button0\n");
             start_time = current_time;
-            TCA0.SINGLE.PERBUF = 9487;
-            TCA0.SINGLE.CMP0BUF = 4743;
+            TCA0.SINGLE.PERBUF = TONE1_PER;
+            TCA0.SINGLE.CMP0BUF = TONE1_PER >> 1;
             PORTB.OUTSET = PIN0_bm;
             start_time = current_time;
             waiting = 1;
@@ -405,8 +406,8 @@ int main(void)
             ledD = 1;
             uart_puts("buttonState = button1\n");
             start_time = current_time;
-            TCA0.SINGLE.PERBUF = 11288;
-            TCA0.SINGLE.CMP0BUF = 5644;
+            TCA0.SINGLE.PERBUF = TONE2_PER;
+            TCA0.SINGLE.CMP0BUF = TONE2_PER >> 1;
             PORTB.OUTSET = PIN0_bm;
             start_time = current_time;
             waiting = 1;
@@ -429,8 +430,8 @@ int main(void)
             ledD = 2;
             uart_puts("buttonState = button2\n");
             start_time = current_time;
-            TCA0.SINGLE.PERBUF = 12654;
-            TCA0.SINGLE.CMP0BUF = 6327;
+            TCA0.SINGLE.PERBUF = TONE3_PER;
+            TCA0.SINGLE.CMP0BUF = TONE3_PER >> 1;
             PORTB.OUTSET = PIN0_bm;
             start_time = current_time;
             waiting = 1;
@@ -453,8 +454,8 @@ int main(void)
             ledD = 3;
             uart_puts("buttonState = button3\n");
             start_time = current_time;
-            TCA0.SINGLE.PERBUF = 14242;
-            TCA0.SINGLE.CMP0BUF = 7121;
+            TCA0.SINGLE.PERBUF = TONE4_PER;
+            TCA0.SINGLE.CMP0BUF = TONE4_PER >> 1;
             PORTB.OUTSET = PIN0_bm;
             start_time = current_time;
             waiting = 1;
