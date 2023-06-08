@@ -10,15 +10,18 @@
 #include "buttons.h"
 #include "adc.h"
 
-typedef enum
-{
+volatile typedef enum {
     playback,
     gameplay,
 
 } gameModes;
 
-typedef enum
-{
+volatile typedef enum {
+    user_input,
+    waiting_key,
+} serial;
+
+volatile typedef enum {
     wait,
     button1,
     button2,
@@ -81,6 +84,10 @@ uint32_t next(void)
     return STEP;
 }
 
+gameModes gameMode = playback;
+buttonStates buttonState = wait;
+playback_states playback_state = maker;
+
 volatile uint32_t current_time;
 uint32_t start_time = 0;
 uint8_t pb_previous = 0xFF;
@@ -98,7 +105,7 @@ uint8_t ledD = 0;    // LED display
 uint8_t score1 = 1;  // Score for player 1
 uint8_t score10 = 0; // Score for player 10
 
-void main(void)
+int main(void)
 {
     cli();                      // Disable interrupts
     uart_init();                // Initialise UART (serial port)
@@ -111,9 +118,6 @@ void main(void)
     adc_init();                 // Initialize the ADC
     TCB0.INTCTRL = TCB_CAPT_bm; // Enable interrupts for TCB0
     sei();                      // Enable interrupts
-    gameModes gameMode = playback;
-    buttonStates buttonState = wait;
-    playback_states playback_states = maker;
 
     uint8_t button_release = 0; // Check if any buttons are released
     uint8_t waiting;            // Check if the user is waiting for the next step
@@ -125,6 +129,10 @@ void main(void)
 
     while (1)
     {
+        if (USART0.STATUS & USART_RXCIF_bm)
+        {
+            uart_puts("fuck");
+        }
         uint8_t pb_changed = pb_current ^ pb_previous; // Check if any buttons have changed
         uint8_t pb_falling = pb_changed & pb_previous; // Check if any buttons are falling
         uint8_t pb_rising = pb_changed & pb_current;   // Check if any buttons are rising
@@ -136,7 +144,7 @@ void main(void)
         case playback:
         {
             uart_puts("gamemode = playback\n");
-            switch (playback_states)
+            switch (playback_state)
             {
             case maker:
             {
@@ -170,7 +178,7 @@ void main(void)
                             buttonState = button4;
                             break;
                         }
-                        playback_states = playwait;
+                        playback_state = playwait;
                     }
                 }
                 else if (sequenceI >= round_count)
@@ -178,7 +186,7 @@ void main(void)
                     uart_puts("sequenceI >= round_count\n");
                     gameMode = gameplay;
                     buttonState = wait;
-                    playback_states = hold;
+                    playback_state = hold;
                     sequenceI = 0;
                 }
                 break;
@@ -191,7 +199,7 @@ void main(void)
                 {
                     uart_puts("sequence++\n");
                     sequenceI++;
-                    playback_states = maker;
+                    playback_state = maker;
                 }
                 break;
             }
@@ -209,11 +217,9 @@ void main(void)
         }
         case gameplay:
         {
-            if (message == 1)
-            {
-                uart_puts("gameMode = gameplay\n");
-                message = 0;
-            }
+
+            uart_puts("gameMode = gameplay\n");
+            message = 0;
             if (pb_falling & PIN4_bm)
             {
                 uart_puts("pb_falling & PIN4_bm\n");
@@ -262,6 +268,70 @@ void main(void)
                     button_release = 0;
                 }
             }
+
+            if ((USART0.STATUS & USART_RXCIF_bm))
+            {
+                uart_puts("receiving data\n");
+                uint8_t rx_data = USART0.RXDATAL;
+                switch (rx_data)
+                {
+                case '1':
+
+                case 'q':
+                {
+                    message = 1;
+                    buttonState = button1;
+                    button_release = 1;
+                    guessMade = 1;
+                    guess = 0;
+                    gameMode = hold;
+                    USART0.STATUS ^= USART_RXCIF_bm;
+                    break;
+                }
+
+                case '2':
+
+                case 'w':
+                {
+                    buttonState = button2;
+                    button_release = 1;
+                    guessMade = 1;
+                    message = 1;
+                    gameMode = hold;
+                    guess = 1;
+                    USART0.STATUS ^= USART_RXCIF_bm;
+                    break;
+                }
+
+                case '3':
+
+                case 'e':
+                {
+                    buttonState = button3;
+                    button_release = 1;
+                    guessMade = 1;
+                    message = 1;
+                    gameMode = hold;
+                    guess = 2;
+                    USART0.STATUS ^= USART_RXCIF_bm;
+                    break;
+                }
+
+                case '4':
+
+                case 'r':
+                {
+                    buttonState = button4;
+                    button_release = 1;
+                    guessMade = 1;
+                    message = 1;
+                    gameMode = hold;
+                    guess = 3;
+                    USART0.STATUS ^= USART_RXCIF_bm;
+                }
+                }
+            }
+
             break;
             uart_puts("\n");
         }
@@ -276,7 +346,11 @@ void main(void)
         }
         case wait:
         {
-            uart_puts("buttonState = wait\n");
+            if (message == 1)
+            {
+                uart_puts("buttonState = wait\n");
+                message = 0;
+            }
             if (pb_rising)
             {
                 button_release = 0;
@@ -430,7 +504,7 @@ void main(void)
                         score1 = 0;
                     }
                     gameMode = playback;
-                    playback_states = hold;
+                    playback_state = hold;
                     buttonState = display_score;
                     start_time = current_time;
                 }
@@ -438,11 +512,19 @@ void main(void)
                 {
                     uart_puts("round cont\n");
                     buttonState = wait;
+                    gameMode = gameplay;
                 }
             }
             else
             {
                 uart_puts("incorrect\n");
+                uart_puts("\n");
+                uart_puts("guess = ");
+                uart_putc(guess + '0');
+                uart_puts("num = ");
+                uart_putc(num + '0');
+                uart_puts("\n");
+
                 score1 = 1;
                 disp_score = 1;
                 finished = 2;
@@ -451,7 +533,7 @@ void main(void)
                 sequenceI = 0;
                 round_count = 1;
                 gameMode = playback;
-                playback_states = hold;
+                playback_state = hold;
                 buttonState = display_score;
                 start_time = current_time;
             }
@@ -479,7 +561,7 @@ void main(void)
                         uart_puts("score disp fin, start game\n");
                         buttonState = wait;
                         gameMode = playback;
-                        playback_states = maker;
+                        playback_state = maker;
                     }
                 }
             }

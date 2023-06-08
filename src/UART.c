@@ -4,18 +4,14 @@
 
 void uart_init(void)
 {
-    PORTB.DIRSET = PIN2_bm;                       // Enable PB2 as output (USART0 TXD)
-    USART0.BAUD = 1389;                           // 9600 baud @ 3.3 MHz
-    USART0.CTRLB = USART_RXEN_bm | USART_TXEN_bm; // Enable Tx/Rx
-    USART0.CTRLA = USART_RXCIE_bm;                // Enable RX interrupt
+    // 9600 baud
+    USART0.BAUD = 1389;
+    PORTB.DIRSET = PIN2_bm;
+    // Enable receive complete interrupt
+    USART0.CTRLA = USART_RXCIE_bm;
+    USART0.CTRLB = USART_RXEN_bm | USART_TXEN_bm;
 }
 
-uint8_t uart_getc(void)
-{
-    while (!(USART0.STATUS & USART_RXCIF_bm))
-        ; // Wait for data
-    return USART0.RXDATAL;
-}
 void uart_putc(char c)
 {
     while (!(USART0.STATUS & USART_DREIF_bm))
