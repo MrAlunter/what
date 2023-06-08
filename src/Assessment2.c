@@ -26,6 +26,7 @@ typedef enum
     button4,
     checker,
     holder,
+    display_score,
 } buttonStates;
 
 typedef enum
@@ -118,7 +119,9 @@ void main(void)
     uint8_t waiting;            // Check if the user is waiting for the next step
     uint8_t guessMade = 0;      // Check if the user has made a guess
     uint8_t disp_score = 0;     // Check if the score needs to be displayed
-    uint8_t finished;           // Check if the round is finished
+    uint8_t finished = 0;       // Check if the round is finished
+    uint8_t message;            // Check if a message needs to be displayed
+    ledD = 4;                   // Set the LED display to nothing
 
     while (1)
     {
@@ -173,7 +176,6 @@ void main(void)
                 else if (sequenceI >= round_count)
                 {
                     uart_puts("sequenceI >= round_count\n");
-                    uart_puts("change gameMode = gameplay\n");
                     gameMode = gameplay;
                     buttonState = wait;
                     playback_states = hold;
@@ -203,13 +205,19 @@ void main(void)
             break;
                 uart_puts("\n");
             }
+            break;
         }
         case gameplay:
         {
-            uart_puts("now gamemode = gameplay\n");
+            if (message == 1)
+            {
+                uart_puts("gameMode = gameplay\n");
+                message = 0;
+            }
             if (pb_falling & PIN4_bm)
             {
                 uart_puts("pb_falling & PIN4_bm\n");
+                message = 1;
                 buttonState = button1;
                 button_release = 1;
                 guessMade = 1;
@@ -224,6 +232,7 @@ void main(void)
                 buttonState = button2;
                 button_release = 1;
                 guessMade = 1;
+                message = 1;
                 if (pb_falling & pb_rising)
                 {
                     button_release = 0;
@@ -235,6 +244,7 @@ void main(void)
                 buttonState = button3;
                 button_release = 1;
                 guessMade = 1;
+                message = 1;
                 if (pb_falling & pb_rising)
                 {
                     button_release = 0;
@@ -246,6 +256,7 @@ void main(void)
                 buttonState = button4;
                 button_release = 1;
                 guessMade = 1;
+                message = 1;
                 if (pb_falling & pb_rising)
                 {
                     button_release = 0;
@@ -265,6 +276,7 @@ void main(void)
         }
         case wait:
         {
+            uart_puts("buttonState = wait\n");
             if (pb_rising)
             {
                 button_release = 0;
@@ -276,24 +288,14 @@ void main(void)
                 ledD = 4;
                 if ((current_time - start_time) >= ((1750 * ADC0.RESULT >> 8) + 250))
                 {
-                    // if (disp_score == 1)
-                    // {
-                    //     ledD = 6;
-                    //     disp_score = 0;
-                    //     buttonState = wait;
-                    // }
-                    // if (disp_score == 0)
-                    // {
-                    //     gameMode = playback;
-                    //     buttonState = wait;
-                    //     playback_states = maker;
-                    // }
                     time = 0;
                     waiting = 0;
                     if (guessMade)
                     {
-                        guessMade = 0;
-                        buttonState = checker;
+                        uart_puts("checking guess\n");
+                        guessMade = 0; // reset guessMade
+                        message = 1;
+                        buttonState = checker; // check if guess is correct
                     }
                 }
             }
@@ -413,10 +415,10 @@ void main(void)
                 if (sequenceI >= round_count)
                 {
                     uart_puts("round fin\n");
+                    uart_puts("\n");
                     round_count++;
                     sequenceI = 0;
                     start_time = current_time;
-                    finished = 1;
                     score1++;
                     disp_score = 1;
                     ledD = 5;
@@ -428,9 +430,9 @@ void main(void)
                         score1 = 0;
                     }
                     gameMode = playback;
-                    buttonState = wait;
-                    playback_states = maker;
-                    break;
+                    playback_states = hold;
+                    buttonState = display_score;
+                    start_time = current_time;
                 }
                 else if (sequenceI < round_count)
                 {
@@ -444,13 +446,42 @@ void main(void)
                 score1 = 1;
                 disp_score = 1;
                 finished = 2;
+                ledD = 7;
                 score10 = 0;
                 sequenceI = 0;
                 round_count = 1;
                 gameMode = playback;
-                buttonState = wait;
-                playback_states = playwait;
-                break;
+                playback_states = hold;
+                buttonState = display_score;
+                start_time = current_time;
+            }
+            break;
+        }
+        case display_score:
+        {
+            if (((current_time - start_time) >= (((1750 * ADC0.RESULT >> 8) + 250) >> 1)) && button_release == 0)
+            {
+                ledD = 4;
+                if ((current_time - start_time) >= ((1750 * ADC0.RESULT >> 8) + 250))
+                {
+                    if (disp_score == 1)
+                    {
+                        uart_puts("display score\n");
+                        ledD = 6;
+                        uart_puts("ledD =");
+                        uart_putc(ledD + '0');
+                        disp_score = 0;
+                        buttonState = display_score;
+                        start_time = current_time;
+                    }
+                    else
+                    {
+                        uart_puts("score disp fin, start game\n");
+                        buttonState = wait;
+                        gameMode = playback;
+                        playback_states = maker;
+                    }
+                }
             }
             break;
         }
@@ -556,6 +587,11 @@ ISR(TCB0_INT_vect)
         else
             spi_write(score1s[score10]);
     }
+    case 7:
+        if (side == 0)
+            spi_write(0b01110111);
+        else
+            spi_write(0b11110111);
     }
     side = !side;
     TCB0.INTFLAGS = TCB_CAPT_bm;
